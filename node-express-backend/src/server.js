@@ -4,8 +4,28 @@ import fs from 'fs';
 import {MongoClient } from 'mongodb';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
+import mongoose from 'mongoose'
+import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+
+const infoSchema = new mongoose.Schema({
+  name: String,
+  movie: String,
+  email: { type: String, required: true }
+})
+
+const Info = mongoose.model('Info', infoSchema);
+
 dotenv.config()
+
+
+async function main() {
+  await mongoose.connect(process.env.MONGO_CONNECT + '/customers')
+}
+
+main();
+
+const jsonParser = bodyParser.json()
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename)
@@ -34,6 +54,19 @@ console.log(movieData);
     {"title":"Titanic"},
     {"title":"Die Hard"}
 ];*/
+
+app.post('/api/addInfo', jsonParser, async (req, res) => {
+  const custInfo = new Info(req.body) 
+  
+  try{
+    await custInfo.save();
+  } catch(err){
+    res.sendStatus(206);
+    return;
+  }
+
+  res.sendStatus(200);
+})
 
 app.get('/api/movies', async (req, res) => {
     
